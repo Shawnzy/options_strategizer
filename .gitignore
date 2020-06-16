@@ -1,3 +1,11 @@
+# Custom
+.vscode/
+*__pucache__/
+*.ipynb_checkpoints
+.settings/
+*.DS_Store
+.classpath*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
