@@ -5,6 +5,7 @@
 .settings/
 *.DS_Store
 .classpath*
+data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
