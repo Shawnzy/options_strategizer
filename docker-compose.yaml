@@ -1,0 +1,70 @@
+version: "3.7"
+
+services:
+  db:
+    image: postgres:12.2
+    restart: always
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: ${_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${_POSTGRES_PASSWORD}
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  webserver:
+    image: puckel/docker-airflow:1.10.9
+    restart: always
+    depends_on:
+      - db
+    environment:
+      - LOAD_EX=n
+      - EXECUTOR=Local
+      - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=False
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://${_POSTGRES_USER}:${_POSTGRES_PASSWORD}@pgsql-server:5432/postgres
+      # Get App Password from https://security.google.com/settings/security/apppasswords
+      # More info for email setup: https://stackoverflow.com/questions/51829200
+      - AIRFLOW__SMTP__SMTP_HOST=smtp.gmail.com
+      - AIRFLOW__SMTP__SMTP_USER=${_AIRFLOW__SMTP__SMTP_USER}
+      - AIRFLOW__SMTP__SMTP_PASSWORD=${_AIRFLOW__SMTP__SMTP_PASSWORD}
+      - AIRFLOW__SMTP__SMTP_PORT=587
+      - AIRFLOW__SMTP__SMTP_MAIL_FROM=${_AIRFLOW__SMTP__SMTP_USER}
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    volumes:
+      - ./dags:/usr/local/airflow/dags
+      - ./options_strategizer/scraper:/usr/local/airflow/dags/scraper
+      - ./logs/scraper:/usr/local/airflow/logs
+      - ./requirements.txt:/requirements.txt
+    ports:
+      - "8081:8080"
+    command: webserver
+    healthcheck:
+      test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    links:
+      - "db:pgsql-server"
+
+  pgadmin:
+    image: dpage/pgadmin4:4.23
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${_PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${_PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_LISTEN_PORT: 80
+    ports:
+      - "8080:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    links:
+      - "db:pgsql-server"
+
+volumes:
+  db-data:
+  pgadmin-data:

@@ -1,0 +1,11 @@
+setuptools~=40.2.0
+pandas~=0.25.0
+sqlalchemy~=1.2.11
+pytz~=2020.1
+yahoo-fin~=0.8.5
+numpy~=1.18.5
+requests~=2.24.0
+requests-html~=0.10.0
+click~=7.1.2
+PyYAML~=5.3.1
+#psycopg2~=2.8.4
